@@ -10,13 +10,15 @@ interface State {
     spikes: Function;
     bars: Function;
     circleBars: Function;
+    grid: Function;
+    updateFunction: Function;
 
 }
 
 export default class Visualizer extends React.Component<Props, State> {
-    private _context:any
-    private _audio: any;
-    private _audioSrc:any
+    private _context: AudioContext
+    private _audio: HTMLMediaElement;
+    private _audioSrc: MediaElementAudioSourceNode
     constructor(props: Props) {
         super(props);
         this.createVisualization = this.createVisualization.bind(this);
@@ -24,65 +26,49 @@ export default class Visualizer extends React.Component<Props, State> {
             circle: this.circles.bind(this),
             spikes: this.circleSpikes.bind(this),
             bars: this.bars.bind(this),
-            circleBars: this.circleWithBars.bind(this)
+            circleBars: this.circleWithBars.bind(this),
+            grid: this.grid.bind(this),
+            updateFunction: this.bars.bind(this)
         }
 
 
     }
 
     componentDidMount() {
-        // this.createVisualization();
-        // fetch('https://api.soundcloud.com/resolve.json?url=https://soundcloud.com/carlrball/softsilence-like-a-king-mix-5&client_id=b1495e39071bd7081a74093816f77ddb', {
-        //     method: 'GET',
-        //     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-        // })
-        //     .then((res) => {
-        //         return res.json();
-        //     })
-        //     .then((data) => {
-        //         console.log(data);
-        //         this.setState({
-        //             value: data.id,
-        //             uri: data.stream_url
-        //         })
-        //     });
         this._context = new AudioContext();
 
         this._audio = this.refs.player as HTMLMediaElement;
         this._audio.crossOrigin = 'anonymous';
         this._audioSrc = this._context.createMediaElementSource(this._audio);
+        this.createVisualization();
+
     }
 
-    createVisualization(example: Function) {
-
-        // let context = new AudioContext();
+    createVisualization() {
+        
         let analyser = this._context.createAnalyser();
         let analyser2 = this._context.createAnalyser();
         analyser2.smoothingTimeConstant = 0.1;
 
-
-
         let canvas = this.refs.analyzerCanvas as HTMLCanvasElement;
         let ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-
-        // let audio = this.refs.player as HTMLMediaElement;
-        // audio.crossOrigin = 'anonymous';
-        // let audioSrc = this._context.createMediaElementSource(audio);
-
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         this._audioSrc.connect(analyser);
         this._audioSrc.connect(analyser2);
         this._audioSrc.connect(this._context.destination);
         analyser.connect(this._context.destination);
 
         let renderFrame = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             let freqData: Uint8Array = new Uint8Array(analyser.frequencyBinCount);
             let freqData2: Uint8Array = new Uint8Array(analyser2.frequencyBinCount);
             requestAnimationFrame(renderFrame);
             analyser.getByteFrequencyData(freqData);
             analyser2.getByteFrequencyData(freqData2);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
 
-            example(ctx, canvas, freqData);
+            // example(ctx, canvas, freqData);
+            this.state.updateFunction(ctx, canvas, freqData);
 
         };
         renderFrame();
@@ -112,14 +98,16 @@ export default class Visualizer extends React.Component<Props, State> {
             // // radius = (freqData[i] / 20);
             // let x: number = rX + (freqData[i]);
             // let y: number = rY + (freqData[i]);
-            ctx.beginPath();
             // ctx.arc(rX, rY, radius, 0, 2 * Math.PI);
+            ctx.beginPath();
+
             ctx.moveTo(rX1, rY1);
             ctx.lineTo(rX2, rY2);
-            // ctx.moveTo(rX, rY)            
             ctx.fill();
             ctx.stroke();
-        }
+            ctx.closePath();
+        // ctx.moveTo(rX, rY)  
+        }          
     }
 
     circles(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, freqData: Uint8Array) {
@@ -133,7 +121,9 @@ export default class Visualizer extends React.Component<Props, State> {
             ctx.fill();
             ctx.fillStyle = '#ffffff';
             ctx.strokeStyle = '#ffffff';
+            // ctx.closePath();
             ctx.stroke();
+
         }
     }
 
@@ -162,6 +152,7 @@ export default class Visualizer extends React.Component<Props, State> {
 
         }
         ctx.stroke();
+        ctx.closePath();
     }
 
     grid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, freqData2: Uint8Array) {
@@ -227,35 +218,33 @@ export default class Visualizer extends React.Component<Props, State> {
     }
 
     circleSpikes(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, freqData: Uint8Array) {
+        console.log('hello')
         let num: number = 300;
         ctx.fillStyle = '#b19cd9';
         ctx.beginPath();
-        // ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 3;
         for (let i: number = 0; i < num; i++) {
-
-            // let x1: number = canvas.width * 0.5 + 25 * Math.cos(2 * Math.PI * i / num);
-            // let y1: number = canvas.height * 0.5 + 25 * Math.sin(2 * Math.PI * i / num);
-            // ctx.moveTo(x1, y1);
 
             let rX: number = canvas.width * 0.5 + (freqData[i + 150]) * Math.cos(2 * Math.PI * i / num);
             let rY: number = canvas.height * 0.5 + (freqData[i + 150]) * Math.sin(2 * Math.PI * i / num);
             ctx.lineTo(rX, rY);
-
-            // let x2: number = canvas.width * 0.5 + 25 * Math.cos(2 * Math.PI * (i + 1) / num);
-            // let y2: number = canvas.height * 0.5 + 25 * Math.sin(2 * Math.PI * (i + 1) / num);
-            // ctx.moveTo(x2, y2);
         }
-
+        ctx.closePath();
+        
         ctx.stroke();
         ctx.fill();
 
         // ctx.beginPath();
         ctx.fillStyle = '#ff22aa';
         // ctx.lineWidth = 1;
-        ctx.closePath();
 
         // ctx.globalAlpha = 0.2;
+    }
+
+    changeState(f: Function) {
+            this.setState({
+                updateFunction: f
+            })
     }
 
     render() {
@@ -273,16 +262,16 @@ export default class Visualizer extends React.Component<Props, State> {
                 <Grid>
                     <Row>
                         <Col lg={3}>
-                            <Button bsStyle="primary" onClick={this.createVisualization.bind(this, this.state.circle)}>Example-1</Button>
+                            <Button bsStyle="primary" onClick={this.changeState.bind(this, this.state.circle)}>Example-1</Button>
                         </Col>
                         <Col lg={3}>
-                            <Button bsStyle="primary" onClick={this.createVisualization.bind(this, this.state.spikes)}>Example-2</Button>
+                            <Button bsStyle="primary" onClick={this.changeState.bind(this, this.state.circleBars)}>Example-2</Button>
                         </Col>
                         <Col lg={3}>
-                            <Button bsStyle="primary" onClick={this.createVisualization.bind(this, this.state.bars)}>Example-3</Button>
+                            <Button bsStyle="primary" onClick={this.changeState.bind(this, this.state.grid)}>Example-3</Button>
                         </Col>
                         <Col lg={3}>
-                            <Button bsStyle="primary" onClick={this.createVisualization.bind(this, this.state.circleBars)}>Example-4</Button>
+                            <Button bsStyle="primary" onClick={this.changeState.bind(this, this.state.spikes)}>Example-4</Button>
                         </Col>
                         <Col className="audio-container" lg={12}>
                             <audio controls ref="player" className="player" preload="false">
