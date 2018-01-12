@@ -7,18 +7,6 @@
   height: 80px;
 }
 
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
-}
-
-/* .canvas {
-  width: 500px;
-  height: 500px;
-} */
-
 .App-intro {
   font-size: large;
 }
@@ -39,6 +27,16 @@
   width: 100%;
 }
 
-.audio-container {
-  margin-top: 5%;
+.example-row-1 {
+  margin-block-end: 1%;
+}
+
+.example-row-2 {
+  margin-block-end: 1%;
+}
+
+.jumboHeader  {
+  background-color: #000000c7; 
+  color: #ffffff;
+  margin-bottom: 0;
 }

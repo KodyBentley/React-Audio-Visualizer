@@ -1,10 +1,9 @@
 import * as React from 'react';
 import Visualizer from './components/visualizerComponent';
+import Header from './components/header';
 import Props from './interfaces/iProp';
 import State from './interfaces/iState';
-import './App.css';
-
-const logo = require('./logo.svg');
+import './styles/App.css';
 
 class App extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -14,12 +13,8 @@ class App extends React.Component<Props, State> {
   render() {
     return (
       <div className="App">
-        <div className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h2>Welcome to React Audio Visualizer</h2>
-        </div>
+        <Header />
         <Visualizer />
-
       </div>
     );
   }
