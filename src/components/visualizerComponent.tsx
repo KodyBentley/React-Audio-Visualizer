@@ -110,10 +110,7 @@ export default class Visualizer extends React.Component<Props, State> {
                             </Col>
                         </Col>
                         <Col className="example-row-1" lg={12}>
-                            <Col lg={3} lgPush={3}>
-                                <Button bsStyle="primary" onClick={this.changeState.bind(this, this.state.circleBars)}>Example-4</Button>
-                            </Col>
-                            <Col lg={3} lgPush={3}>
+                            <Col lg={3}>
                                 <Button bsStyle="primary" onClick={this.changeState.bind(this, this.state.spikes)}>Example-5</Button>
                             </Col>
                         </Col>
